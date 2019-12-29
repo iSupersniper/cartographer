@@ -74,5 +74,13 @@ void XboxTickDeinitializer::onDedi() {
 }
 
 void XboxTickDeinitializer::onPeerHost() {
-	//Does nothing for peer host on client hosted game
+	WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), 60);
+
+	BYTE push_ebp_xor_bl_bl[] = { 0x53, 0x32, 0xDB };
+	WriteBytes((DWORD)h2mod->GetAddress(0x3A938, 0x0), push_ebp_xor_bl_bl, sizeof(push_ebp_xor_bl_bl));
+
+	BYTE je[] = { 0x84 };
+	WriteBytes((DWORD)h2mod->GetAddress(0x288BD), je, sizeof(je));
+
+	TRACE_GAME("[h2mod] Set the game tickrate to 60");
 }
