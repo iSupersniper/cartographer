@@ -6,13 +6,14 @@
 XboxTick::XboxTick()
 {
 	this->preSpawnPlayer = new XboxTickPreSpawnHandler();
+	this->deinitializer = new XboxTickDeinitializer();
 }
 
 int GetTickrate()
 {
 	int tickrate = 60;
 	const wchar_t* OGH2 = L"ogh2";
-	if (StrStrIW(h2mod->GetLobbyGameVariantName(), OGH2)) // enable
+	if (StrStrIW(h2mod->GetLobbyGameVariantName(), OGH2))
 	{
 		tickrate = 30;
 		WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), tickrate);
@@ -27,7 +28,6 @@ int GetTickrate()
 	}
 	else
 	{
-		// disables
 		WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), tickrate);
 
 		BYTE push_ebp_xor_bl_bl[] = { 0x53, 0x32, 0xDB };
@@ -54,4 +54,25 @@ void XboxTickPreSpawnHandler::onDedi() {
 }
 
 void XboxTickPreSpawnHandler::onPeerHost() {
+}
+
+void XboxTickDeinitializer::onClient()
+{
+	WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), 60);
+
+	BYTE push_ebp_xor_bl_bl[] = { 0x53, 0x32, 0xDB };
+	WriteBytes((DWORD)h2mod->GetAddress(0x3A938, 0x0), push_ebp_xor_bl_bl, sizeof(push_ebp_xor_bl_bl));
+
+	BYTE je[] = { 0x84 };
+	WriteBytes((DWORD)h2mod->GetAddress(0x288BD), je, sizeof(je));
+
+	TRACE_GAME("[h2mod] Set the game tickrate to 60");
+}
+
+void XboxTickDeinitializer::onDedi() {
+	//Does nothing for dedicated server host
+}
+
+void XboxTickDeinitializer::onPeerHost() {
+	//Does nothing for peer host on client hosted game
 }
