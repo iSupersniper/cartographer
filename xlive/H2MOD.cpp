@@ -1135,7 +1135,6 @@ void __cdecl OnMapLoad(int a1)
 			b_FireFight = true;
 		}
 
-		const wchar_t* OGH2 = L"ogh2";
 		if (wcsstr(variant_name, L"ogh2") > 0 || wcsstr(variant_name, L"OGH2") > 0 || wcsstr(variant_name, L"Ogh2") > 0 || wcsstr(variant_name, L"oGh2") > 0 || wcsstr(variant_name, L"ogH2") > 0 || wcsstr(variant_name, L"OGh2") > 0 || wcsstr(variant_name, L"oGH2") > 0 || wcsstr(variant_name, L"OgH2") > 0)
 		{
 			b_XboxTick = true;

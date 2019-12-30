@@ -9,6 +9,8 @@ XboxTick::XboxTick()
 	this->deinitializer = new XboxTickDeinitializer();
 }
 
+DWORD& MapHeaderType = *(DWORD*)(H2BaseAddr + 0x47CD68 + 0x14C);
+
 int GetTickrate()
 {
 	int tickrate = 60;
@@ -28,6 +30,7 @@ int GetTickrate()
 	}
 	else
 	{
+		tickrate = 60;
 		WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), tickrate);
 
 		BYTE push_ebp_xor_bl_bl[] = { 0x53, 0x32, 0xDB };
@@ -58,10 +61,13 @@ void XboxTickPreSpawnHandler::onPeerHost() {
 
 void XboxTickDeinitializer::onClient()
 {
-	WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), 60);
-
+	int tickrate = 60;
 	BYTE push_ebp_xor_bl_bl[] = { 0x53, 0x32, 0xDB };
 	WriteBytes((DWORD)h2mod->GetAddress(0x3A938, 0x0), push_ebp_xor_bl_bl, sizeof(push_ebp_xor_bl_bl));
+
+	WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), tickrate);
+	WriteValue(*(DWORD*)(h2mod->GetBase() + 0x4C06E4 + 0x2, 0x0), tickrate);
+	WriteValue(*(DWORD*)(h2mod->GetBase() + 0x4C06E4 + 0x4, 0x0), (float)(1 / tickrate));
 
 	BYTE je[] = { 0x84 };
 	WriteBytes((DWORD)h2mod->GetAddress(0x288BD), je, sizeof(je));
@@ -73,11 +79,15 @@ void XboxTickDeinitializer::onDedi() {
 	//Does nothing for dedicated server host
 }
 
-void XboxTickDeinitializer::onPeerHost() {
-	WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), 60);
-
+void XboxTickDeinitializer::onPeerHost()
+{
+	int tickrate = 60;
 	BYTE push_ebp_xor_bl_bl[] = { 0x53, 0x32, 0xDB };
 	WriteBytes((DWORD)h2mod->GetAddress(0x3A938, 0x0), push_ebp_xor_bl_bl, sizeof(push_ebp_xor_bl_bl));
+
+	WriteValue((DWORD)h2mod->GetAddress(0x264ABB + 1, 0x0), tickrate);
+	WriteValue(*(DWORD*)h2mod->GetAddress(0x4C06E4 + 0x2, 0x0), tickrate);
+	WriteValue(*(DWORD*)h2mod->GetAddress(0x4C06E4 + 0x4, 0x0), (float)(1 / tickrate));
 
 	BYTE je[] = { 0x84 };
 	WriteBytes((DWORD)h2mod->GetAddress(0x288BD), je, sizeof(je));

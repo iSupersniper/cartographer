@@ -26,4 +26,6 @@ class XboxTick : public GameType<XboxTickHandler>
 public:
 	XboxTick();
 	void applyHooks();
+	static void Initialize();
+	static void Deinitialize();
 };
