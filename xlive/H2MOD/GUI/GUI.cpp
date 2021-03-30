@@ -651,7 +651,7 @@ int WINAPI XLiveRender()
 				PlayerIterator playerIt;
 				while (playerIt.get_next_active_player()) 
 				{
-					real_point3d* player_position = h2mod->get_player_unit_coords(playerIt.get_current_player_index());
+					real_point3d* player_position = &h2mod->get_player_unit_from_player_index(playerIt.get_current_player_index())->Placement;
 					if (player_position != nullptr) {
 						std::wstring playerNameWide(playerIt.get_current_player_name());
 						std::string playerName(playerNameWide.begin(), playerNameWide.end());

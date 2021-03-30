@@ -28,8 +28,6 @@ enum static_lod : DWORD
 	cinematic
 };
 
-int __cdecl call_get_game_tick_rate();
-bool __cdecl call_add_object_to_sync(datum gamestate_object_datum);
 void call_give_player_weapon(int PlayerIndex, datum WeaponId, bool bReset);
 
 class H2MOD
@@ -41,10 +39,9 @@ public:
 		void ApplyUnitHooks();
 		void RegisterEvents();
 		void team_player_indicator_visibility(bool toggle);
-		BYTE* get_player_unit_from_player_index(int playerIndex);
+		BipedObjectDefinition* get_player_unit_from_player_index(int playerIndex);
 		datum get_player_datum_index_from_controller_index(int controller_index);
 		wchar_t* get_local_player_name(int local_player_index);
-		real_point3d* get_player_unit_coords(int player_index);
 		float get_distance(int, int);
 		int get_player_index_from_unit_datum_index(datum unit_datum_index);
 		BYTE get_unit_team_index(datum unit_datum_index);

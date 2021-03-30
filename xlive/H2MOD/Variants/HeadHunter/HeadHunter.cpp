@@ -65,7 +65,7 @@ void HeadHunter::SpawnSkull(datum unit_datum)
 
 		datum new_object_datum = Engine::Objects::call_object_new(&nObject);
 		if (!new_object_datum.IsNull())
-			call_add_object_to_sync(new_object_datum);
+			Engine::Objects::add_object_to_sync(new_object_datum);
 	}
 }
 
