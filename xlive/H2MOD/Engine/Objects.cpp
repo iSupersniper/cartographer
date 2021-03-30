@@ -1,16 +1,17 @@
 #include "Engine.h"
+#include "Blam/Engine/Objects/Objects.h"
 
 namespace Engine
 {
 	namespace Objects
 	{
 		//Grabs object from object table and verifies the type matches
-		char* __cdecl try_and_get_data_with_type(datum object_datum_index, int object_type_flags)
+		char* __cdecl try_and_get_data_with_type(datum object_index, int object_type_flags)
 		{
 			//LOG_TRACE_GAME("call_get_object( object_datum_index: %08X, object_type: %08X )", object_datum_index, object_type);
-			typedef char* (__cdecl get_object)(datum object_datum_index, int object_type_flags);
+			typedef char* (__cdecl get_object)(datum object_index, int object_type_flags);
 			auto p_get_object = Memory::GetAddress<get_object*>(0x1304E3, 0x11F3A6);
-			return p_get_object(object_datum_index, object_type_flags);
+			return p_get_object(object_index, object_type_flags);
 		}
 
 		void __cdecl create_new_placement_data(ObjectPlacementData* s_object_placement_data, datum object_definition_index, datum object_owner, int unk)
@@ -36,12 +37,27 @@ namespace Engine
 		}
 
 		//Pass datum from new object into object to sync
-		bool __cdecl call_add_object_to_sync(datum gamestate_object_datum)
+		bool __cdecl add_object_to_sync(datum object_index)
 		{
-			typedef int(__cdecl add_object_to_sync)(datum gamestate_object_datum);
+			typedef int(__cdecl add_object_to_sync)(datum object_index);
 			auto p_add_object_to_sync = Memory::GetAddress<add_object_to_sync*>(0x1B8D14, 0x1B2C44);
 
-			return p_add_object_to_sync(gamestate_object_datum);
+			return p_add_object_to_sync(object_index);
+		}
+
+		//Fills the creation data for the given object
+		int __cdecl set_creation_data(datum object_index, void* creation_data)
+		{
+			typedef int(__cdecl fill_creation_data_from_object_index)(datum datum, void* creation_data);
+			auto p_fill_creation_data_from_object_index = Memory::GetAddress<fill_creation_data_from_object_index*>(0x1F24ED);
+
+			return p_fill_creation_data_from_object_index(object_index, creation_data);
+		}
+
+
+		int get_player_index_from_datum(datum unit_index)
+		{
+			return (Objects::getObject<BipedObjectDefinition*>(unit_index))->PlayerDatum.ToAbsoluteIndex();
 		}
 	}
 }

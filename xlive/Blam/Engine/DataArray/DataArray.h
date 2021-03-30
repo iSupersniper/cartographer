@@ -22,6 +22,10 @@ struct s_datum_array
 	datum next_datum;				// 0x40
 	char* datum;					// 0x44
 	int* datum_usable_bit_mask;		// 0x48
+	bool index_valid(::datum index) const
+	{
+		return (index.ToAbsoluteIndex() >= 0 && index.ToAbsoluteIndex() < datum_max_elements);
+	}
 };
 static_assert(sizeof(s_datum_array) == 0x4C, "s_data_array size != 0x4C");
 

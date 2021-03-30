@@ -342,13 +342,13 @@ void ConsoleCommands::spawn(datum object_datum, int count, float x, float y, flo
 			if (!object_datum.IsNull()) {
 				datum player_datum = Player::getPlayerUnitDatumIndex(h2mod->get_player_datum_index_from_controller_index(0).Index);
 				Engine::Objects::create_new_placement_data(&nObject, object_datum, player_datum, 0);
-				real_point3d* player_position = h2mod->get_player_unit_coords(h2mod->get_player_datum_index_from_controller_index(0).Index);
+				real_point3d player_position = h2mod->get_player_unit_from_player_index(h2mod->get_player_datum_index_from_controller_index(0).Index)->Placement;
 
-				if (player_position != nullptr) {
-					nObject.Placement.x = player_position->x * static_cast <float> (rand()) / static_cast<float>(RAND_MAX);
-					nObject.Placement.y = player_position->y * static_cast <float> (rand()) / static_cast<float>(RAND_MAX);
-					nObject.Placement.z = (player_position->z + 5.0f) * static_cast <float> (rand()) / static_cast<float>(RAND_MAX);
-				}
+				//if (player_position != nullptr) {
+					nObject.Placement.x = player_position.x * static_cast <float> (rand()) / static_cast<float>(RAND_MAX);
+					nObject.Placement.y = player_position.y * static_cast <float> (rand()) / static_cast<float>(RAND_MAX);
+					nObject.Placement.z = (player_position.z + 5.0f) * static_cast <float> (rand()) / static_cast<float>(RAND_MAX);
+				//}
 				if (specificPosition) {
 					nObject.Placement.x = x;
 					nObject.Placement.y = y;
@@ -357,7 +357,7 @@ void ConsoleCommands::spawn(datum object_datum, int count, float x, float y, flo
 
 				LOG_TRACE_GAME("object_datum = {0:#x}, x={1:f}, y={2:f}, z={3:f}", object_datum.ToInt(), nObject.Placement.x, nObject.Placement.y, nObject.Placement.z);
 				unsigned int object_gamestate_datum = Engine::Objects::call_object_new(&nObject);
-				call_add_object_to_sync(object_gamestate_datum);
+				Engine::Objects::add_object_to_sync(object_gamestate_datum);
 			}
 		}
 		catch (...) {
@@ -575,8 +575,8 @@ void ConsoleCommands::handle_command(std::string command) {
 				return;
 			}
 
-			real_point3d* localPlayerPosition = h2mod->get_player_unit_coords(h2mod->get_player_datum_index_from_controller_index(0).Index);
-			this->spawn(object_datum, count, localPlayerPosition->x + 0.5f, localPlayerPosition->y + 0.5f, localPlayerPosition->z + 0.5f, randomMultiplier, false);
+			real_point3d localPlayerPosition = h2mod->get_player_unit_from_player_index(h2mod->get_player_datum_index_from_controller_index(0).Index)->Placement;
+			this->spawn(object_datum, count, localPlayerPosition.x + 0.5f, localPlayerPosition.y + 0.5f, localPlayerPosition.z + 0.5f, randomMultiplier, false);
 			return;
 		}
 		else if (firstCommand == "$ishost") {

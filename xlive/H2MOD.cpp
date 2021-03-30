@@ -37,7 +37,7 @@
 #include "H2MOD/Modules/MainMenu/MapSlots.h"
 #include "H2MOD/Modules/HitFix/MeleeFix.h"
 #include "H2MOD/Modules/SpecialEvents/SpecialEvents.h"
-#include "Blam/Engine/Objects/GameStateObjects.h"
+#include "Blam/Engine/Objects/GameStateObjects.hpp"
 #include "H2MOD/Engine/Engine.h"
 
 H2MOD* h2mod = new H2MOD();
@@ -73,12 +73,6 @@ std::unordered_map<wchar_t*, bool&> GametypesMap
 
 int GAME_BUILD = 11122;
 int EXECUTABLE_VERSION = 4;
-
-//Currently not used in code base
-int get_player_index_from_datum(datum unit_datum)
-{
-	return ((BipedObjectDefinition*)s_game_state_objects::getObject(unit_datum))->PlayerDatum.ToAbsoluteIndex();
-}
 
 #pragma region engine calls
 
@@ -127,26 +121,6 @@ int __cdecl call_entity_datum_to_gamestate_datum(int entity_datum)
 	return pentity_datum_to_gamestate_datum(entity_datum);
 }
 
-bool __cdecl call_add_object_to_sync(datum gamestate_object_datum)
-{
-	typedef int(__cdecl add_object_to_sync)(datum gamestate_object_datum);
-	auto p_add_object_to_sync = Memory::GetAddress<add_object_to_sync*>(0x1B8D14, 0x1B2C44);
-
-	return p_add_object_to_sync(gamestate_object_datum);
-}
-
-/* We should really make this stuff into a struct/class, and access it that way it'd be much cleaner... */
-int get_actor_datum_from_unit_datum(int unit_datum)
-{
-	char* unit_ptr = Engine::Objects::try_and_get_data_with_type(unit_datum, FLAG(e_object_type::biped));
-	if (unit_ptr)
-	{
-		return *(int*)(unit_ptr + 0x130);
-	}
-
-	return NONE;
-}
-
 /* This looks at the actors table to get the character datum which is assigned to the specific actor. */
 int get_char_datum_from_actor(int actor_datum)
 {
@@ -177,14 +151,6 @@ int __cdecl call_get_character_sid_from_datum(int char_datum)
 	auto p_get_character_sid_from_datum = Memory::GetAddress<get_character_sid_from_datum*>(0x31796C);
 
 	return p_get_character_sid_from_datum(char_datum);
-}
-
-int __cdecl call_fill_creation_data_from_object_index(int object_index, void* creation_data)
-{
-	typedef int(__cdecl fill_creation_data_from_object_index)(int datum,void* creation_data);
-	auto p_fill_creation_data_from_object_index = Memory::GetAddress<fill_creation_data_from_object_index*>(0x1F24ED);
-
-	return p_fill_creation_data_from_object_index(object_index, creation_data);
 }
 
 signed int __cdecl object_new_hook(ObjectPlacementData* new_object)
@@ -362,34 +328,23 @@ datum H2MOD::get_player_datum_index_from_controller_index(int controller_index)
 
 float H2MOD::get_distance(int playerIndex1, int playerIndex2) {
 	real_point3d points_distance;
-	real_point3d* player1 = nullptr;
-	real_point3d* player2 = nullptr;
 
-	player1 = h2mod->get_player_unit_coords(playerIndex1);
-	player2 = h2mod->get_player_unit_coords(playerIndex2);
+	real_point3d player1 = h2mod->get_player_unit_from_player_index(playerIndex1)->Placement;
+	real_point3d player2 = h2mod->get_player_unit_from_player_index(playerIndex2)->Placement;
 	
-	points_distance.x = abs(player1->x - player2->x);
-	points_distance.y = abs(player1->y - player2->y);
-	points_distance.z = abs(player1->z - player2->z);
+	points_distance.x = abs(player1.x - player2.x);
+	points_distance.y = abs(player1.y - player2.y);
+	points_distance.z = abs(player1.z - player2.z);
 
 	return sqrt(pow(points_distance.x, 2) + pow(points_distance.y, 2) + pow(points_distance.z, 2));
 }
 
-real_point3d* H2MOD::get_player_unit_coords(int playerIndex) {
-	BYTE* player_unit = get_player_unit_from_player_index(playerIndex);
-	if (player_unit != nullptr)
-		return reinterpret_cast<real_point3d*>(player_unit + 0x64);
-
-	return nullptr;
-}
-
-BYTE* H2MOD::get_player_unit_from_player_index(int playerIndex) {
+BipedObjectDefinition* H2MOD::get_player_unit_from_player_index(int playerIndex) {
 	datum unit_datum = Player::getPlayerUnitDatumIndex(playerIndex);
 	if (unit_datum.IsNull())
 		return nullptr;
-
-	DatumIterator<ObjectHeader> objectsIt(game_state_objects_header);
-	return (BYTE*)objectsIt.get_data_at_index(unit_datum.ToAbsoluteIndex())->object;
+	auto unitObject = Engine::Objects::getObject<BipedObjectDefinition*>(unit_datum);
+	return unitObject;
 }
 
 void call_give_player_weapon(int playerIndex, datum weaponId, bool bReset)
